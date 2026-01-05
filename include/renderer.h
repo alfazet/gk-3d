@@ -1,0 +1,4 @@
+#ifndef GK_3D_RENDERER_H
+#define GK_3D_RENDERER_H
+
+#endif //GK_3D_RENDERER_H
