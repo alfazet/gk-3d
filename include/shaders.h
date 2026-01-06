@@ -8,6 +8,8 @@ class Shaders
 public:
     uint programId;
 
+    Shaders() = default;
+
     Shaders(const std::string& vertShaderPath, const std::string& fragShaderPath);
 
     void setUniformMat4(const std::string& name, const mat4& m) const;

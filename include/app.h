@@ -14,7 +14,7 @@ class App
 public:
     int width, height;
     GLFWwindow* window;
-    Shaders* shaders;
+    Shaders shaders;
 
     App(int argc, char** argv);
 

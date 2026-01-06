@@ -5,6 +5,7 @@ void framebufferSizeCallback(GLFWwindow* window, int nWidth, int nHeight)
     App& app = *static_cast<App*>(glfwGetWindowUserPointer(window));
     app.width = nWidth;
     app.height = nHeight;
+    glViewport(0, 0, app.width, app.height);
 }
 
 void init(uint& vao, uint& vboPos, uint& vboColor, uint& ebo)
@@ -72,8 +73,8 @@ App::App(int argc, char** argv)
     }
     const std::string vertShaderPath = std::format("{}/shaders/basic.vert", PROJECT_DIR);
     const std::string fragShaderPath = std::format("{}/shaders/basic.frag", PROJECT_DIR);
-    this->shaders = new Shaders(vertShaderPath, fragShaderPath);
-    glUseProgram(this->shaders->programId);
+    this->shaders = Shaders(vertShaderPath, fragShaderPath);
+    glUseProgram(this->shaders.programId);
     glViewport(0, 0, this->width, this->height);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -106,8 +107,8 @@ void App::run()
     mat4 model = mat4(1.0f);
     mat4 view = glm::lookAt(vec3(2.0f), vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
     mat4 proj = glm::perspective(fov, aspect, 0.1f, 100.0f);
-    this->shaders->setUniformMat4("proj", proj);
-    this->shaders->setUniformMat4("view", view);
+    this->shaders.setUniformMat4("proj", proj);
+    this->shaders.setUniformMat4("view", view);
     constexpr vec3 rotationAxis = vec3(0.0f, 1.0f, 0.0f);
 
     int fps = 0, framesThisSecond = 0;
@@ -126,7 +127,7 @@ void App::run()
         }
 
         model = glm::rotate(model, this->m_dt, rotationAxis);
-        this->shaders->setUniformMat4("model", model);
+        this->shaders.setUniformMat4("model", model);
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
