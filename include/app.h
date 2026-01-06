@@ -22,10 +22,12 @@ public:
 
     void run();
 
-    static void renderImguiFrame(int fps);
+    void renderImguiFrame(int fps) const;
+
+    void handleKeys() const;
 
 private:
-    float m_dt = 0.0f;
+    float m_dt;
     uint m_vao, m_vboPos, m_vboColor, m_ebo;
 };
 

@@ -111,11 +111,10 @@ void App::run()
     constexpr vec3 rotationAxis = vec3(0.0f, 1.0f, 0.0f);
 
     int fps = 0, framesThisSecond = 0;
-    float prevTime = static_cast<float>(glfwGetTime()), prevSeconds = 0.0f;
-
+    auto prevTime = static_cast<float>(glfwGetTime()), prevSeconds = 0.0f;
     while (!glfwWindowShouldClose(this->window))
     {
-        float curTime = static_cast<float>(glfwGetTime());
+        auto curTime = static_cast<float>(glfwGetTime());
         this->m_dt = curTime - prevTime;
         prevTime = curTime;
         framesThisSecond++;
@@ -134,13 +133,14 @@ void App::run()
         glBindVertexArray(this->m_vao);
         glDrawElements(GL_TRIANGLES, N_FACES * 3, GL_UNSIGNED_INT, nullptr);
 
-        renderImguiFrame(fps);
+        this->handleKeys();
+        this->renderImguiFrame(fps);
         glfwSwapBuffers(this->window);
         glfwPollEvents();
     }
 }
 
-void App::renderImguiFrame(int fps)
+void App::renderImguiFrame(int fps) const
 {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -156,4 +156,12 @@ void App::renderImguiFrame(int fps)
     ImGui::End();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void App::handleKeys() const
+{
+    if (glfwGetKey(this->window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    {
+        glfwSetWindowShouldClose(this->window, true);
+    }
 }
