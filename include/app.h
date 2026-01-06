@@ -6,6 +6,8 @@
 
 constexpr size_t WIN_WIDTH = 1920;
 constexpr size_t WIN_HEIGHT = 1080;
+constexpr size_t N_FACES = 4;
+constexpr bool VSYNC = false;
 
 class App
 {
@@ -18,10 +20,12 @@ public:
 
     ~App();
 
-    void run() const;
+    void run();
+
+    static void renderImguiFrame(int fps);
 
 private:
-    float m_dt = 0;
+    float m_dt = 0.0f;
     uint m_vao, m_vboPos, m_vboColor, m_ebo;
 };
 

@@ -14,40 +14,23 @@ void init(uint& vao, uint& vboPos, uint& vboColor, uint& ebo)
     glGenBuffers(1, &vboColor);
     glGenBuffers(1, &ebo);
 
-    // float pos[] = {
-    //     1.0f, 1.0f, 1.0f,
-    //     -1.0f, -1.0f, 1.0f,
-    //     -1.0f, 1.0f, -1.0f,
-    //     1.0f, -1.0f, -1.0f,
-    // };
-    // float color[] = {
-    //     1.0f, 0.0f, 0.0f,
-    //     0.0f, 1.0f, 0.0f,
-    //     0.0f, 0.0f, 1.0f,
-    //     0.5f, 0.0f, 0.5f,
-    // };
-    // uint indices[] = {
-    //     0, 1, 2,
-    //     0, 3, 1,
-    //     0, 2, 3,
-    //     1, 3, 2,
-    // };
-
     float pos[] = {
-        -0.5f, -0.5f, -5.0f,
-        0.5f, -0.5f, -5.0f,
-        0.5f, 0.5f, -5.0f,
-        -0.5f, 0.5f, -5.0f,
+        1.0f, 1.0f, 1.0f,
+        -1.0f, -1.0f, 1.0f,
+        -1.0f, 1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
     };
     float color[] = {
+        0.5f, 0.0f, 1.0f,
+        1.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 1.0f,
-        0.5f, 0.0f, 0.5f,
+        1.0f, 0.5f, 0.0f,
     };
     uint indices[] = {
         0, 1, 2,
-        2, 0, 3,
+        0, 3, 1,
+        0, 2, 3,
+        1, 3, 2,
     };
 
     glBindVertexArray(vao);
@@ -56,13 +39,13 @@ void init(uint& vao, uint& vboPos, uint& vboColor, uint& ebo)
 
     // vertex attribute 0 (positions)
     glBindBuffer(GL_ARRAY_BUFFER, vboPos);
-    glBufferData(GL_ARRAY_BUFFER, 3 * 4 * sizeof(float), pos, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, N_FACES * 3 * sizeof(float), pos, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
 
     // vertex attribute 1 (colors)
     glBindBuffer(GL_ARRAY_BUFFER, vboColor);
-    glBufferData(GL_ARRAY_BUFFER, 3 * 4 * sizeof(float), color, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, N_FACES * 3 * sizeof(float), color, GL_STATIC_DRAW);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
     glEnableVertexAttribArray(1);
 }
@@ -82,7 +65,7 @@ App::App(int argc, char** argv)
         ERR_AND_DIE("glfwCreateWindow");
     }
     glfwMakeContextCurrent(this->window);
-    glfwSwapInterval(0);
+    glfwSwapInterval(VSYNC);
     if (!gladLoadGL(glfwGetProcAddress))
     {
         ERR_AND_DIE("gladLoadGL");
@@ -116,25 +99,61 @@ App::~App()
     glfwTerminate();
 }
 
-void App::run() const
+void App::run()
 {
+    float fov = glm::radians(120.0f);
+    float aspect = static_cast<float>(this->width) / this->height;
+    mat4 model = mat4(1.0f);
+    mat4 view = glm::lookAt(vec3(2.0f), vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
+    mat4 proj = glm::perspective(fov, aspect, 0.1f, 100.0f);
+    this->shaders->setUniformMat4("proj", proj);
+    this->shaders->setUniformMat4("view", view);
+    constexpr vec3 rotationAxis = vec3(0.0f, 1.0f, 0.0f);
+
+    int fps = 0, framesThisSecond = 0;
+    float prevTime = static_cast<float>(glfwGetTime()), prevSeconds = 0.0f;
+
     while (!glfwWindowShouldClose(this->window))
     {
-        float fov = glm::radians(30.0f);
-        float aspect = static_cast<float>(this->width) / this->height;
-        mat4 proj = glm::ortho(-aspect, aspect, -1.0f, 1.0f, glm::tan(fov / 2.0f), 100.0f);
-        mat4 view = glm::translate(mat4(1.0f), vec3(0.0f));
-        mat4 model = mat4(1.0f);
-        this->shaders->setUniformMat4("proj", proj);
-        this->shaders->setUniformMat4("view", view);
+        float curTime = static_cast<float>(glfwGetTime());
+        this->m_dt = curTime - prevTime;
+        prevTime = curTime;
+        framesThisSecond++;
+        if (curTime - prevSeconds >= 1.0f)
+        {
+            fps = framesThisSecond;
+            framesThisSecond = 0;
+            prevSeconds += 1.0f;
+        }
+
+        model = glm::rotate(model, this->m_dt, rotationAxis);
         this->shaders->setUniformMat4("model", model);
 
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glBindVertexArray(this->m_vao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, N_FACES * 3, GL_UNSIGNED_INT, nullptr);
 
+        renderImguiFrame(fps);
         glfwSwapBuffers(this->window);
         glfwPollEvents();
     }
+}
+
+void App::renderImguiFrame(int fps)
+{
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    ImGui::SetNextWindowSize(ImVec2(75, 25), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(0, 0));
+    if (!ImGui::Begin("FPS", nullptr, ImGuiWindowFlags_NoDecoration))
+    {
+        ImGui::End();
+        return;
+    }
+    ImGui::Text("%d FPS", fps);
+    ImGui::End();
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
