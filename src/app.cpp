@@ -8,7 +8,7 @@ void framebufferSizeCallback(GLFWwindow* window, int nWidth, int nHeight)
     glViewport(0, 0, app.width, app.height);
 }
 
-void init(uint& vao, uint& vboPos, uint& vboColor, uint& ebo)
+void initGLBuffers(uint& vao, uint& vboPos, uint& vboColor, uint& ebo)
 {
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vboPos);
@@ -79,7 +79,9 @@ App::App(int argc, char** argv)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glDepthMask(GL_TRUE);
-    init(this->m_vao, this->m_vboPos, this->m_vboColor, this->m_ebo);
+    initGLBuffers(this->m_vao, this->m_vboPos, this->m_vboColor, this->m_ebo);
+
+    this->camera = Camera(vec3(2.0f), vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -105,7 +107,7 @@ void App::run()
     float fov = glm::radians(120.0f);
     float aspect = static_cast<float>(this->width) / this->height;
     mat4 model = mat4(1.0f);
-    mat4 view = glm::lookAt(vec3(2.0f), vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
+    mat4 view = this->camera.view();
     mat4 proj = glm::perspective(fov, aspect, 0.1f, 100.0f);
     this->shaders.setUniformMat4("proj", proj);
     this->shaders.setUniformMat4("view", view);
