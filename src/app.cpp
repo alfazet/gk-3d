@@ -22,10 +22,10 @@ void initGLBuffers(uint& vao, uint& vboPos, uint& vboColor, uint& ebo)
         1.0f, -1.0f, -1.0f,
     };
     float color[] = {
-        0.5f, 0.0f, 1.0f,
-        1.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 0.0f,
-        1.0f, 0.5f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 1.0f,
+        0.25f, 0.0f, 0.5f,
     };
     uint indices[] = {
         0, 1, 2,
@@ -104,14 +104,12 @@ App::~App()
 
 void App::run()
 {
-    float fov = glm::radians(120.0f);
+    constexpr float fov = glm::radians(120.0f);
+    constexpr vec3 rotationAxis = vec3(0.0f, 1.0f, 0.0f);
     float aspect = static_cast<float>(this->width) / this->height;
     mat4 model = mat4(1.0f);
-    mat4 view = this->camera.view();
     mat4 proj = glm::perspective(fov, aspect, 0.1f, 100.0f);
     this->shaders.setUniformMat4("proj", proj);
-    this->shaders.setUniformMat4("view", view);
-    constexpr vec3 rotationAxis = vec3(0.0f, 1.0f, 0.0f);
 
     int fps = 0, framesThisSecond = 0;
     auto prevTime = static_cast<float>(glfwGetTime()), prevSeconds = 0.0f;
@@ -128,7 +126,9 @@ void App::run()
             prevSeconds += 1.0f;
         }
 
+        mat4 view = this->camera.view();
         model = glm::rotate(model, this->m_dt, rotationAxis);
+        this->shaders.setUniformMat4("view", view);
         this->shaders.setUniformMat4("model", model);
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -161,10 +161,18 @@ void App::renderImguiFrame(int fps) const
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void App::handleKeys() const
+void App::handleKeys()
 {
     if (glfwGetKey(this->window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(this->window, true);
+    }
+    for (const auto& key : BOUND_KEYS)
+    {
+        if (glfwGetKey(this->window, key) == GLFW_PRESS)
+        {
+            this->camera.handleKey(key, this->m_dt);
+            break;
+        }
     }
 }

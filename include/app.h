@@ -8,9 +8,10 @@
 constexpr size_t WIN_WIDTH = 1920;
 constexpr size_t WIN_HEIGHT = 1080;
 constexpr size_t N_FACES = 4;
-constexpr bool VSYNC = true;
+constexpr bool VSYNC = false;
 
-constexpr int BOUND_KEYS[4] = {GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT};
+constexpr int BOUND_KEYS[11] = {GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_W, GLFW_KEY_S,
+                                GLFW_KEY_A, GLFW_KEY_D, GLFW_KEY_Q, GLFW_KEY_E, GLFW_KEY_0};
 
 class App
 {
@@ -28,7 +29,7 @@ public:
 
     void renderImguiFrame(int fps) const;
 
-    void handleKeys() const;
+    void handleKeys();
 
 private:
     float m_dt;

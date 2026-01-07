@@ -1,7 +1,5 @@
 #include "shaders.h"
 
-constexpr size_t INFO_LOG_LEN = 2048;
-
 void checkShaderCompilation(uint shader)
 {
     int ok;
@@ -46,11 +44,10 @@ Shaders::Shaders(const std::string& vertShaderPath, const std::string& fragShade
     glAttachShader(id, fragShader);
     glLinkProgram(id);
     checkProgramLinking(id);
+    this->programId = id;
 
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
-
-    this->programId = id;
 }
 
 void Shaders::setUniformMat4(const std::string& name, const mat4& m) const

@@ -3,10 +3,12 @@
 
 #include "common.h"
 
+constexpr size_t INFO_LOG_LEN = 2048;
+
 class Shaders
 {
 public:
-    uint programId;
+    uint programId{};
 
     Shaders() = default;
 
